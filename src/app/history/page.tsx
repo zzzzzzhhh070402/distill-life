@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { listEvaluations, deleteEvaluation } from '@/lib/storage';
 
 interface EvalItem {
   id: string;
   subject_name: string;
   evaluation_type: string;
-  status: string;
   answered_count: number;
   created_at: string;
   updated_at: string;
@@ -19,28 +19,14 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/evaluations');
-        const data = await res.json();
-        setEvaluations(data);
-      } catch {
-        // silent
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    setEvaluations(listEvaluations());
+    setLoading(false);
   }, []);
 
-  const handleDelete = async (eid: string) => {
+  const handleDelete = (eid: string) => {
     if (!confirm('确定要删除这份记录吗？')) return;
-    try {
-      await fetch(`/api/evaluations/${eid}`, { method: 'DELETE' });
-      setEvaluations((prev) => prev.filter((e) => e.id !== eid));
-    } catch {
-      alert('删除失败');
-    }
+    deleteEvaluation(eid);
+    setEvaluations((prev) => prev.filter((e) => e.id !== eid));
   };
 
   const now = new Date();
@@ -95,13 +81,13 @@ export default function HistoryPage() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   className="btn btn-secondary btn-sm"
-                  onClick={() => router.push(`/evaluate/${ev.id}`)}
+                  onClick={() => router.push(`/evaluate?id=${ev.id}`)}
                 >
                   继续
                 </button>
                 <button
                   className="btn btn-primary btn-sm"
-                  onClick={() => router.push(`/report/${ev.id}`)}
+                  onClick={() => router.push(`/report?id=${ev.id}`)}
                 >
                   报告
                 </button>

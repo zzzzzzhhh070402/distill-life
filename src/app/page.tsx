@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createEvaluation } from '@/lib/storage';
 
 export default function Home() {
   const router = useRouter();
@@ -10,19 +11,14 @@ export default function Home() {
   const [evalType, setEvalType] = useState<'self' | 'other'>('self');
   const [loading, setLoading] = useState(false);
 
-  const handleStart = async () => {
+  const handleStart = () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/evaluations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject_name: subjectName || '未命名',
-          evaluation_type: evalType,
-        }),
+      const id = createEvaluation({
+        subject_name: subjectName || '未命名',
+        evaluation_type: evalType,
       });
-      const data = await res.json();
-      router.push(`/evaluate/${data.id}`);
+      router.push(`/evaluate?id=${id}`);
     } catch {
       alert('创建失败，请重试');
     } finally {
